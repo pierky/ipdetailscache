@@ -41,6 +41,9 @@ Requirements / Third-party Libraries
 
 Part of this work is based on Google Python IP address manipulation library (https://code.google.com/p/ipaddr-py/). You can install it using pip: `pip install ipaddr`.
 
+Bug? Issues?
+------------
+
 Have a bug? Please create an issue here on GitHub at https://github.com/pierky/ipdetailscache/issues
 
 Author
