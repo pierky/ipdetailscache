@@ -35,3 +35,8 @@ Example
     >>> result = cache.GetIPInformation( "193.0.6.139" )
     >>> result
     {u'Prefix': u'193.0.0.0/21', u'HostName': u'www.ripe.net', u'Holder': u'RIPE-NCC-AS Reseaux IP Europeens Network Coordination Centre (RIPE NCC),NL', u'TS': 140178124$
+
+Third-party Libraries
+---------------------
+
+Part of this work is based on Google Python IP address manipulation library (https://code.google.com/p/ipaddr-py/).
