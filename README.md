@@ -39,4 +39,4 @@ Example
 Third-party Libraries
 ---------------------
 
-Part of this work is based on Google Python IP address manipulation library (https://code.google.com/p/ipaddr-py/).
+Part of this work is based on Google Python IP address manipulation library (https://code.google.com/p/ipaddr-py/). You can install it using pip: `pip install ipaddr`.
