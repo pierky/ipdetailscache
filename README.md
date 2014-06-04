@@ -36,7 +36,16 @@ Example
     >>> result
     {u'Prefix': u'193.0.0.0/21', u'HostName': u'www.ripe.net', u'Holder': u'RIPE-NCC-AS Reseaux IP Europeens Network Coordination Centre (RIPE NCC),NL', u'TS': 140178124$
 
-Third-party Libraries
----------------------
+Requirements / Third-party Libraries
+------------------------------------
 
 Part of this work is based on Google Python IP address manipulation library (https://code.google.com/p/ipaddr-py/). You can install it using pip: `pip install ipaddr`.
+
+Have a bug? Please create an issue here on GitHub at https://github.com/pierky/ipdetailscache/issues
+
+Author
+------
+
+Pier Carlo Chiodi - http://pierky.com/aboutme
+
+Blog: http://blog.pierky.com Twitter: @pierky
