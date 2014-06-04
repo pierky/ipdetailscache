@@ -48,4 +48,4 @@ Author
 
 Pier Carlo Chiodi - http://pierky.com/aboutme
 
-Blog: http://blog.pierky.com Twitter: @pierky
+Blog: http://blog.pierky.com Twitter: <a href="http://twitter.com/pierky">@pierky</a>
