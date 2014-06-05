@@ -26,7 +26,7 @@
 # (https://code.google.com/p/ipaddr-py/).
 
 """A Python library to gather IP address details (ASN, prefix, resource holder, reverse DNS) using the 
-RIPEStat API, with a basic cache to avoid flood of requests and to enhance performances."""
+RIPEStat API, with a basic cache to avoid flood of requests and to enhance performance."""
 
 __version__ = "0.1"
 
@@ -66,7 +66,7 @@ __version__ = "0.1"
 import os.path
 import time
 import json
-import ipaddr		# http://code.google.com/p/ipaddr-py/
+import ipaddr		# http://code.google.com/p/ipaddr-py/ - pip install ipaddr
 import socket
 import urllib2
 
