@@ -151,18 +151,23 @@ class IPDetailsCache():
 			if obj["status"] == "ok":
 				Result["TS"] = int(time.time())
 
-				try:
-					Result["ASN"] = str(obj["data"]["asns"][0]["asn"])
-					Result["Holder"] = obj["data"]["asns"][0]["holder"]
+				if obj["data"]["asns"] != []:
+					try:
+						Result["ASN"] = str(obj["data"]["asns"][0]["asn"])
+						Result["Holder"] = obj["data"]["asns"][0]["holder"]
+						Result["Prefix"] = obj["data"]["resource"]
+
+						self._Debug("Got data for %s: ASN %s, prefix %s" % ( IP, Result["ASN"], Result["Prefix"] ) )
+					except:
+						Result["ASN"] = "unknown"
+
+						self._Debug("No data for %s" % IP )
+				else:
+					Result["ASN"] = "not announced"
+					Result["Holder"] = ""
 					Result["Prefix"] = obj["data"]["resource"]
 
-					self._Debug("Got data for %s: ASN %s, prefix %s" % ( IP, Result["ASN"], Result["Prefix"] ) )
-				except:
-					Result["ASN"] = "unknown"
-
-					self._Debug("No data for %s" % IP )
-
-			if Result["ASN"].isdigit():
+			if Result["ASN"].isdigit() or Result["ASN"] == "not announced":
 				HostName = socket.getfqdn(IP)
 				if HostName == IP or HostName == "":
 					Result["HostName"] = "unknown"

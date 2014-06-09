@@ -3,6 +3,11 @@ ipdetailscache
 
 A Python library to gather IP address details (ASN, prefix, resource holder, reverse DNS) using the RIPEStat API, with a basic cache to avoid flood of requests and to enhance performances.
 
+Requirements / Third-party Libraries
+------------------------------------
+
+Part of this work is based on Google Python IP address manipulation library (https://code.google.com/p/ipaddr-py/). You can install it using pip: `pip install ipaddr`.
+
 Usage
 -----
 
@@ -35,11 +40,6 @@ Example
     >>> result = cache.GetIPInformation( "193.0.6.139" )
     >>> result
     {u'Prefix': u'193.0.0.0/21', u'HostName': u'www.ripe.net', u'Holder': u'RIPE-NCC-AS Reseaux IP Europeens Network Coordination Centre (RIPE NCC),NL', u'TS': 140178124$
-
-Requirements / Third-party Libraries
-------------------------------------
-
-Part of this work is based on Google Python IP address manipulation library (https://code.google.com/p/ipaddr-py/). You can install it using pip: `pip install ipaddr`.
 
 Bug? Issues?
 ------------
