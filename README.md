@@ -6,7 +6,13 @@ A Python library to gather IP address details (ASN, prefix, resource holder, rev
 Requirements / Third-party Libraries
 ------------------------------------
 
-Part of this work is based on Google Python IP address manipulation library (https://code.google.com/p/ipaddr-py/). You can install it using pip: `pip install ipaddr`.
+Part of this work is based on Google Python IP address manipulation library (https://code.google.com/p/ipaddr-py/) and Jeff Ferland IPy library (https://github.com/autocracy/python-ipy).
+
+You need either ipaddr or IPy; version 0.2 of this library tries to import ipaddr and falls back on IPy.
+
+You can install them using pip:
+- `pip install ipaddr`
+- `pip install IPy`
 
 Usage
 -----

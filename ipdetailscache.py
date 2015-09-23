@@ -1,4 +1,4 @@
-# Copyright (c) 2014 Pier Carlo Chiodi - http://www.pierky.com
+# Copyright (c) 2015 Pier Carlo Chiodi - http://www.pierky.com
 # Licensed under The MIT License (MIT) - http://opensource.org/licenses/MIT
 #
 # The MIT License (MIT)
@@ -23,12 +23,13 @@
 # SOFTWARE.
 #
 # Part of this work is based on Google Python IP address manipulation library
-# (https://code.google.com/p/ipaddr-py/).
+# (https://code.google.com/p/ipaddr-py/) and Jeff Ferland IPy library
+# (https://github.com/autocracy/python-ipy).
 
 """A Python library to gather IP address details (ASN, prefix, resource holder, reverse DNS) using the 
 RIPEStat API, with a basic cache to avoid flood of requests and to enhance performance."""
 
-__version__ = "0.1"
+__version__ = "v0.2.0"
 
 # Usage
 # =====
@@ -66,9 +67,63 @@ __version__ = "0.1"
 import os.path
 import time
 import json
-import ipaddr		# http://code.google.com/p/ipaddr-py/ - pip install ipaddr
 import socket
 import urllib2
+
+try:
+  import ipaddr	# http://code.google.com/p/ipaddr-py/ - pip install ipaddr
+  ip_library = 'ipaddr'
+except ImportError:
+  import IPy			# https://github.com/autocracy/python-ipy/ - pip install ipy
+  ip_library = 'IPy'
+
+class IPWrapper():
+  def __init__(self, ip):
+    if ip_library == 'ipaddr':
+      self.ip_object = ipaddr.IPAddress(ip)
+    else:
+      self.ip_object = IPy.IP(ip)
+
+  def get_version(self):
+    if ip_library == 'ipaddr':
+      return self.ip_object.version
+    else:
+      return self.ip_object.version()
+
+  def is_globally_routable(self):
+    if ip_library == 'ipaddr':
+      if self.get_version() == 4:
+        return not self.ip_object.is_private
+      else:
+        return not (self.ip_object.is_private or
+                    self.ip_object.is_reserved or
+                    self.ip_object.is_link_local or
+                    self.ip_object.is_site_local or
+                    self.ip_object.is_unspecified)
+    else:
+      return self.ip_object.iptype() not in ['RESERVED', 'UNSPECIFIED',
+                                             'LOOPBACK', 'UNASSIGNED',
+                                             'DOCUMENTATION', 'ULA',
+                                             'LINKLOCAL']
+
+  def exploded(self):
+    if ip_library == 'ipaddr':
+      return self.ip_object.exploded
+    else:
+      return self.ip_object.strFullsize()
+
+class NetWrapper():
+  def __init__(self, prefix):
+    if ip_library == 'ipaddr':
+      self.net_object = ipaddr.IPNetwork(prefix)
+    else:
+      self.net_object = IPy.IP(prefix)
+
+  def contains(self, ip_obj):
+    if ip_library == 'ipaddr':
+      return self.net_object.Contains(ip_obj.ip_object)
+    else:
+      return ip_obj.ip_object in self.net_object
 
 class IPDetailsCache():
 
@@ -95,30 +150,17 @@ class IPDetailsCache():
 		Result["HostName"] = ""
 
 		IP = in_IP
+		IPObj = IPWrapper(IP)
+
+		if IP != IPObj.exploded():
+			IP = IPObj.exploded()
 
 		if not IP in self.IPAddressObjects:
-			self.IPAddressObjects[IP] = ipaddr.IPAddress(IP)
+			self.IPAddressObjects[IP] = IPObj
 
-		if self.IPAddressObjects[IP].version == 4:
-			if self.IPAddressObjects[IP].is_private:
-				Result["ASN"] = "unknown"
-				return Result
-
-		if self.IPAddressObjects[IP].version == 6:
-			if self.IPAddressObjects[IP].is_reserved or \
-				self.IPAddressObjects[IP].is_link_local or \
-				self.IPAddressObjects[IP].is_site_local or \
-				self.IPAddressObjects[IP].is_private or \
-				self.IPAddressObjects[IP].is_multicast or \
-				self.IPAddressObjects[IP].is_unspecified:
-
-				Result["ASN"] = "unknown"
-				return Result
-
-			if IP != self.IPAddressObjects[IP].exploded:
-				IP = self.IPAddressObjects[IP].exploded
-				if not IP in self.IPAddressObjects:
-					self.IPAddressObjects[IP] = ipaddr.IPAddress(IP)
+		if not IPObj.is_globally_routable():
+			Result["ASN"] = "unknown"
+			return Result
 
 		if IP in self.IPAddressesCache:
 			if self.IPAddressesCache[IP]["TS"] >= int(time.time()) - self.MAX_CACHE:
@@ -131,9 +173,9 @@ class IPDetailsCache():
 		for IPPrefix in self.IPPrefixesCache:
 			if self.IPPrefixesCache[IPPrefix]["TS"] >= int(time.time()) - self.MAX_CACHE:
 				if not IPPrefix in self.IPPrefixObjects:
-					self.IPPrefixObjects[IPPrefix] = ipaddr.IPNetwork( IPPrefix )
+					self.IPPrefixObjects[IPPrefix] = NetWrapper(IPPrefix)
 
-				if self.IPPrefixObjects[IPPrefix].Contains( self.IPAddressObjects[IP] ):
+				if self.IPPrefixObjects[IPPrefix].contains(IPObj):
 					Result["TS"] = self.IPPrefixesCache[IPPrefix]["TS"]
 					Result["ASN"] = self.IPPrefixesCache[IPPrefix]["ASN"]
 					Result["Holder"] = self.IPPrefixesCache[IPPrefix].get("Holder","")
@@ -188,7 +230,7 @@ class IPDetailsCache():
 			IPPrefix = Result["Prefix"]
 
 			if not IPPrefix in self.IPPrefixesCache:
-				self.IPPrefixesCache[ IPPrefix ] = {}
+				self.IPPrefixesCache[IPPrefix] = {}
 				self._Debug("Adding %s to prefixes cache" % IPPrefix)
 
 			self.IPPrefixesCache[IPPrefix]["TS"] = Result["TS"]
@@ -208,6 +250,10 @@ class IPDetailsCache():
 		with open( self.IP_PREFIXES_CACHE_FILE, "w" ) as outfile:
 			json.dump( self.IPPrefixesCache, outfile )
 
+	@staticmethod
+	def _file_not_zero(path):
+		return True if os.path.exists(path) and os.path.getsize(path) > 0 else False
+
 	def __init__( self, IP_ADDRESSES_CACHE_FILE = "ip_addr.cache", IP_PREFIXES_CACHE_FILE = "ip_pref.cache", MAX_CACHE = 604800, Debug = False ):
 		self.IPAddressesCache = {}
 		self.IPPrefixesCache = {}
@@ -220,7 +266,7 @@ class IPDetailsCache():
 		self.Debug = Debug
 
 		# Load IP addresses cache
-		if os.path.exists( self.IP_ADDRESSES_CACHE_FILE ):
+		if self._file_not_zero(self.IP_ADDRESSES_CACHE_FILE):
 			self._Debug("Loading IP addresses cache from %s" % self.IP_ADDRESSES_CACHE_FILE)
 			json_data = open( self.IP_ADDRESSES_CACHE_FILE )
 			self.IPAddressesCache = json.load( json_data )
@@ -229,7 +275,7 @@ class IPDetailsCache():
 			self._Debug("No IP addresses cache file found: %s" % self.IP_ADDRESSES_CACHE_FILE)
 
 		# Load IP prefixes cache
-		if os.path.exists( self.IP_PREFIXES_CACHE_FILE ):
+		if self._file_not_zero(self.IP_PREFIXES_CACHE_FILE):
 			self._Debug("Loading IP prefixes cache from %s" % self.IP_PREFIXES_CACHE_FILE)
 
 			json_data = open( self.IP_PREFIXES_CACHE_FILE )
