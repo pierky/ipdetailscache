@@ -1,4 +1,4 @@
-# Copyright (c) 2015 Pier Carlo Chiodi - http://www.pierky.com
+# Copyright (c) 2016 Pier Carlo Chiodi - http://www.pierky.com
 # Licensed under The MIT License (MIT) - http://opensource.org/licenses/MIT
 #
 # The MIT License (MIT)
@@ -29,40 +29,7 @@
 """A Python library to gather IP address details (ASN, prefix, resource holder, reverse DNS) using the 
 RIPEStat API, with a basic cache to avoid flood of requests and to enhance performance."""
 
-__version__ = "v0.2.0"
-
-# Usage
-# =====
-#
-# Import the library, then setup a cache object and use it to gather IP address details.
-# The cache object will automatically load and save data to the local cache files.
-#
-# Optionally, the cache object may be instantiated with the following arguments:
-#  - IP_ADDRESSES_CACHE_FILE, path to the file where IP addresses cache will be stored (default: "ip_addr.cache");
-#  - IP_PREFIXES_CACHE_FILE, path to the file where IP prefixes cache will be stored (default: "ip_pref.cache");
-#  - MAX_CACHE, expiration time for cache entries, in seconds (default: 604800, 1 week);
-#  - Debug, set to True to enable some debug messages (default: False).
-#
-# Results are given in a dictionary containing the following keys: ASN, Holder, Prefix, HostName, TS (time stamp).
-#
-# Hostname is obtained using the local socket.getfqdn function.
-#
-# import ipdetailscache
-# cache = ipdetailscache.IPDetailsCache( IP_ADDRESSES_CACHE_FILE = "ip_addr.cache", IP_PREFIXES_CACHE_FILE = "ip_pref.cache", MAX_CACHE = 604800, Debug = False );
-# result = cache.GetIPInformation( "IP_ADDRESS" )
-#
-# Example
-# =======
-#
-# :~# python
-# Python 2.7.2+ (default, Jul 20 2012, 22:15:08)
-# [GCC 4.6.1] on linux2
-# Type "help", "copyright", "credits" or "license" for more information.
-# >>> import ipdetailscache
-# >>> cache = ipdetailscache.IPDetailsCache();
-# >>> result = cache.GetIPInformation( "193.0.6.139" )
-# >>> result
-# {u'Prefix': u'193.0.0.0/21', u'HostName': u'www.ripe.net', u'Holder': u'RIPE-NCC-AS Reseaux IP Europeens Network Coordination Centre (RIPE NCC),NL', u'TS': 1401781240, u'ASN': u'3333'}
+__version__ = "v0.3.0"
 
 import os.path
 import time
@@ -127,9 +94,18 @@ class NetWrapper():
 
 class IPDetailsCache():
 
+        PEERINGDB_API_ixpfx = "https://beta.peeringdb.com/api/ixpfx"
+        PEERINGDB_API_ixlan = "https://beta.peeringdb.com/api/ixlan"
+        PEERINGDB_API_ix = "https://beta.peeringdb.com/api/ix"
+
 	def _Debug(self, s):
 		if self.Debug:
 			print("DEBUG - IPDetailsCache - %s" % s)
+
+        def FetchIPInfo(self, IP):
+                URL = "https://stat.ripe.net/data/prefix-overview/data.json?resource=%s" % IP
+
+                return json.loads( urllib2.urlopen(URL).read() )
 
 	# IPPrefixesCache[<ip prefix>]["TS"]
 	# IPPrefixesCache[<ip prefix>]["ASN"]
@@ -148,6 +124,8 @@ class IPDetailsCache():
 		Result["Holder"] = ""
 		Result["Prefix"] = ""
 		Result["HostName"] = ""
+                Result["IsIXP"] = None
+                Result["IXPName"] = ""
 
 		IP = in_IP
 		IPObj = IPWrapper(IP)
@@ -164,9 +142,10 @@ class IPDetailsCache():
 
 		if IP in self.IPAddressesCache:
 			if self.IPAddressesCache[IP]["TS"] >= int(time.time()) - self.MAX_CACHE:
-				Result = self.IPAddressesCache[IP]
+                                for k in self.IPAddressesCache[IP].keys():
+                                    Result[k] = self.IPAddressesCache[IP][k]
 				self._Debug("IP address cache hit for %s" % IP)
-				return Result
+                                return Result
 			else:
 				self._Debug("Expired IP address cache hit for %s" % IP)
 
@@ -186,9 +165,7 @@ class IPDetailsCache():
 		if Result["ASN"] == "":
 			self._Debug("No cache hit for %s" % IP )
 
-			URL = "https://stat.ripe.net/data/prefix-overview/data.json?resource=%s" % IP
-
-			obj = json.loads( urllib2.urlopen(URL).read() )
+                        obj = self.FetchIPInfo(IP)
 
 			if obj["status"] == "ok":
 				Result["TS"] = int(time.time())
@@ -216,6 +193,18 @@ class IPDetailsCache():
 				else:
 					Result["HostName"] = HostName
 
+                        if self.UseIXPsCache == 2 or ( self.UseIXPsCache == 1 and not Result["ASN"].isdigit() ):
+                            self._Debug("Looking for IXP info")
+
+                            Result["IsIXP"] = False
+
+                            for IPPrefix in self.IXPsCache["Data"].keys():
+                                if NetWrapper(IPPrefix).contains(IPObj):
+                                    Result["IsIXP"] = True
+                                    Result["IXPName"] = self.IXPsCache["Data"][IPPrefix]["name"]
+                                    self._Debug("IXP found: prefix %s, name %s" % (IPPrefix, self.IXPsCache["Data"][IPPrefix]["name"]))
+                                    break
+
 		if not IP in self.IPAddressesCache:
 			self.IPAddressesCache[IP] = {}
 			self._Debug("Adding %s to addresses cache" % IP)
@@ -225,6 +214,8 @@ class IPDetailsCache():
 		self.IPAddressesCache[IP]["Holder"] = Result["Holder"]
 		self.IPAddressesCache[IP]["Prefix"] = Result["Prefix"]
 		self.IPAddressesCache[IP]["HostName"] = Result["HostName"]
+                self.IPAddressesCache[IP]["IsIXP"] = Result["IsIXP"]
+                self.IPAddressesCache[IP]["IXPName"] = Result["IXPName"]
 
 		if Result["Prefix"] != "":
 			IPPrefix = Result["Prefix"]
@@ -236,6 +227,7 @@ class IPDetailsCache():
 			self.IPPrefixesCache[IPPrefix]["TS"] = Result["TS"]
 			self.IPPrefixesCache[IPPrefix]["ASN"] = Result["ASN"]
 			self.IPPrefixesCache[IPPrefix]["Holder"] = Result["Holder"]
+
 
 		return Result
 
@@ -250,21 +242,7 @@ class IPDetailsCache():
 		with open( self.IP_PREFIXES_CACHE_FILE, "w" ) as outfile:
 			json.dump( self.IPPrefixesCache, outfile )
 
-	@staticmethod
-	def _file_not_zero(path):
-		return True if os.path.exists(path) and os.path.getsize(path) > 0 else False
-
-	def __init__( self, IP_ADDRESSES_CACHE_FILE = "ip_addr.cache", IP_PREFIXES_CACHE_FILE = "ip_pref.cache", MAX_CACHE = 604800, Debug = False ):
-		self.IPAddressesCache = {}
-		self.IPPrefixesCache = {}
-		self.IPAddressObjects = {}
-		self.IPPrefixObjects = {}
-
-		self.IP_ADDRESSES_CACHE_FILE = IP_ADDRESSES_CACHE_FILE
-		self.IP_PREFIXES_CACHE_FILE = IP_PREFIXES_CACHE_FILE
-		self.MAX_CACHE = MAX_CACHE
-		self.Debug = Debug
-
+        def LoadCache( self ):
 		# Load IP addresses cache
 		if self._file_not_zero(self.IP_ADDRESSES_CACHE_FILE):
 			self._Debug("Loading IP addresses cache from %s" % self.IP_ADDRESSES_CACHE_FILE)
@@ -284,17 +262,108 @@ class IPDetailsCache():
 		else:
 			self._Debug("No IP prefixes cache file found: %s" % self.IP_PREFIXES_CACHE_FILE)
 
+	@staticmethod
+	def _file_not_zero(path):
+		return True if os.path.exists(path) and os.path.getsize(path) > 0 else False
+
+	def __init__(self, IP_ADDRESSES_CACHE_FILE="ip_addr.cache",
+                     IP_PREFIXES_CACHE_FILE="ip_pref.cache", MAX_CACHE=604800,
+                     dont_save_on_exit=False, Debug=False):
+		self.IPAddressesCache = {}
+		self.IPPrefixesCache = {}
+		self.IPAddressObjects = {}
+		self.IPPrefixObjects = {}
+
+		self.IP_ADDRESSES_CACHE_FILE = IP_ADDRESSES_CACHE_FILE
+		self.IP_PREFIXES_CACHE_FILE = IP_PREFIXES_CACHE_FILE
+		self.MAX_CACHE = MAX_CACHE
+
+                self.IXPsCache = {}
+                self.UseIXPsCache = 0   # 0 = do not use
+                                        # 1 = only when no ASN found
+                                        # 2 = always
+
+                self.DontSaveOnExit = dont_save_on_exit
+		self.Debug = Debug
+
+                self.LoadCache()
+
 		# Test write access to IP addresses cache file
 		self._Debug("Testing write permissions on IP addresses cache file")
-		with open( self.IP_ADDRESSES_CACHE_FILE, "w" ) as outfile:
+		with open( self.IP_ADDRESSES_CACHE_FILE, "a" ) as outfile:
 			outfile.close()
 		self._Debug("Write permissions on IP addresses cache file OK")
 
 		# Test write access to IP prefixes cache file
 		self._Debug("Testing write permissions on IP prefixes cache file")
-		with open( self.IP_PREFIXES_CACHE_FILE, "w" ) as outfile:
+		with open( self.IP_PREFIXES_CACHE_FILE, "a" ) as outfile:
 			outfile.close()
 		self._Debug("Write permissions on IP prefixes cache file OK")
 
+        def LoadIXPsCache(self, cache_file):
+            if self._file_not_zero(cache_file):
+                self._Debug("Loading IXPs cache from %s" % cache_file)
+                json_data = open( cache_file )
+                self.IXPsCache = json.load( json_data )
+                json_data.close()
+            else:
+                self._Debug("No IXPs cache file found: %s" % cache_file)
+
+        def FetchIXPsInfo(self):
+            self._Debug("Fetching IXPs info from PeeringDB API...")
+
+            ixpfxs = json.loads( urllib2.urlopen(IPDetailsCache.PEERINGDB_API_ixpfx).read() )
+            ixlans = json.loads( urllib2.urlopen(IPDetailsCache.PEERINGDB_API_ixlan).read() )
+            ixs = json.loads( urllib2.urlopen(IPDetailsCache.PEERINGDB_API_ix).read() )
+
+            self._Debug("IXPs info fetched")
+
+            return (ixpfxs, ixlans, ixs)
+
+        def UseIXPs(self, WhenUse=1, IXP_CACHE_FILE="ixps.cache", MAX_CACHE=604800):
+
+            self.UseIXPsCache = WhenUse
+
+            if self.UseIXPsCache not in [0, 1, 2]:
+                raise ValueError("UseIXPs WhenUse argument can be 0, 1 or 2.")
+
+            if self.UseIXPsCache == 0:
+                return
+
+            self.LoadIXPsCache(IXP_CACHE_FILE)
+
+            if "TS" in self.IXPsCache:
+                if self.IXPsCache["TS"] < int(time.time()) - self.MAX_CACHE:
+                    self._Debug("IXPs cache expired. Updating it...")
+                else:
+                    return
+
+            ixpfxs, ixlans, ixs = self.FetchIXPsInfo()
+
+            ixs_dict = {}
+            for ix in ixs["data"]:
+                ixs_dict[str(ix["id"])] = { "name": ix["name"] }
+
+            ixlans_dict = {}
+            for ixlan in ixlans["data"]:
+                ixlans_dict[str(ixlan["id"])] = { "ix_id": ixlan["ix_id"] }
+
+            ixpfx_dict = {}
+            for ixpfx in ixpfxs["data"]:
+                prefix = ixpfx["prefix"]
+                ixlan_id = ixpfx["ixlan_id"]
+                ix_id = ixlans_dict[str(ixlan_id)]["ix_id"]
+                ixpfx_dict[prefix] = {
+                        "name": ixs_dict[str(ix_id)]["name"]
+                }
+            self.IXPsCache = {
+                    "TS": int(time.time()),
+                    "Data": ixpfx_dict
+            }
+
+            with open( IXP_CACHE_FILE, "w" ) as outfile:
+                json.dump( self.IXPsCache, outfile )
+
 	def __del__( self ):
+            if not self.DontSaveOnExit:
 		self.SaveCache()
