@@ -11,14 +11,14 @@ Requirements / Third-party Libraries
 
 Part of this work is based on Google Python IP address manipulation library (https://code.google.com/p/ipaddr-py/) and Jeff Ferland IPy library (https://github.com/autocracy/python-ipy).
 
-You need either ipaddr or IPy; versions >=0.2 of this library try to import ipaddr, then fall back on IPy.
+You need either ``ipaddr`` or ``IPy``; versions >=0.2 of this library try to import ``ipaddr``, then fall back on ``IPy``.
 
-You can install them using pip:
+You can install them using ``pip``:
 
-- pip install ipaddr
-- pip install IPy
+- ``pip install ipaddr``
+- ``pip install IPy``
 
-The pip packaged version installs the IPy library.
+The ``pip`` packaged version installs the ``IPy`` library.
 
 Installation
 ============
@@ -34,7 +34,7 @@ Installation
 Tests
 -----
 
-Some tests are provided within the tests directory. You can run them with nosetests -vs.
+Some tests are provided within the tests directory. You can run them with ``nosetests -vs``.
 
 Usage
 =====
@@ -44,13 +44,13 @@ The cache object will automatically load and save data to the local cache files.
 
 Optionally, the cache object may be instantiated with the following arents:
 
-- IP_ADDRESSES_CACHE_FILE, path to the file where IP addresses cache will be stored (default: "ip_addr.cache");
-- IP_PREFIXES_CACHE_FILE, path to the file where IP prefixes cache will be stored (default: "ip_pref.cache");
-- MAX_CACHE, expiration time for cache entries, in seconds (default: 604800, 1 week);
-- dont_save_on_del, avoid to save the cache on __del__ (default: False, so it saves the cache);
-- Debug, set to True to enable some debug messages (default: False).
+- ``IP_ADDRESSES_CACHE_FILE``, path to the file where IP addresses cache will be stored (default: "ip_addr.cache");
+- ``IP_PREFIXES_CACHE_FILE``, path to the file where IP prefixes cache will be stored (default: "ip_pref.cache");
+- ``MAX_CACHE``, expiration time for cache entries, in seconds (default: 604800, 1 week);
+- ``dont_save_on_del``, avoid to save the cache on ``__del__`` (default: False, so it saves the cache);
+- ``Debug``, set to True to enable some debug messages (default: False).
 
-IP_ADDRESSES_CACHE_FILE and IP_PREFIXES_CACHE_FILE can be set to None to avoid persistent storage of the cache on files.
+``IP_ADDRESSES_CACHE_FILE`` and ``IP_PREFIXES_CACHE_FILE`` can be set to None to avoid persistent storage of the cache on files.
 
 Internet Exchange Points (IXPs) information
 -------------------------------------------
@@ -58,7 +58,7 @@ Internet Exchange Points (IXPs) information
 Starting from version 0.3.0, results can be enriched with Internet Exchange Points (IXPs) IP address space information.
 **WARNING**: currently this feature is based on PeeringDB.com (www.peeringdb.com) **beta** API: use it at your own risk.
 
-To enable IXPs info gathering, call the UseIXPs method of the cache.
+To enable IXPs info gathering, call the ``UseIXPs`` method of the cache.
 
 Results are given in a dictionary containing the following keys:
 
@@ -70,7 +70,7 @@ Results are given in a dictionary containing the following keys:
 - IXPName       "string"
 - TS            int
 
-Hostname is obtained using the local socket.getfqdn function.
+Hostname is obtained using the local ``socket.getfqdn`` function.
 
 Usage example::
 
@@ -119,7 +119,7 @@ Example with UseIXPs, WhenUse=1 (default)
     >>> result
     {'HostName': 'rtr-eun-01.ams-ix.net', 'TS': 1453068704, 'Prefix': u'80.249.208.0/21', 'IsIXP': None, 'IXPName': '', 'Holder': u'AMS-IX1 Amsterdam Internet Exchange B.V.,NL', 'ASN': '1200'}
 
-AMS-IX IP is announced, so IsIXP is None because no IXP info have been used here.
+AMS-IX IP is announced, so ``IsIXP`` is ``None`` because no IXP info have been used here.
 
 Example with UseIXPs, WhenUse=2
 -------------------------------
@@ -140,7 +140,7 @@ Clear local cache with ``rm *.cache``, then:
     >>> result
     {'HostName': 'rtr-eun-01.ams-ix.net', 'TS': 1453068956, 'Prefix': u'80.249.208.0/21', 'IsIXP': True, 'IXPName': u'AMS-IX', 'Holder': u'AMS-IX1 Amsterdam Internet Exchange B.V.,NL', 'ASN': '1200'}
 
-Here, even if AMS-IX announces its peering LAN prefix, IXPs info have been used to enrich results because WhenUse is 2.
+Here, even if AMS-IX announces its peering LAN prefix, IXPs info have been used to enrich results because ``WhenUse`` is 2.
 
 ::
 
@@ -148,7 +148,7 @@ Here, even if AMS-IX announces its peering LAN prefix, IXPs info have been used 
     >>> result
     {'HostName': 'www.ripe.net', 'TS': 1453068965, 'Prefix': u'193.0.0.0/21', 'IsIXP': False, 'IXPName': '', 'Holder': u'RIPE-NCC-AS Reseaux IP Europeens Network Coordination Centre (RIPE NCC),NL', 'ASN': '3333'}
 
-The www.ripe.net IP is not on an IXPs peering LAN, so IsIXP == False.
+The www.ripe.net IP is not on an IXPs peering LAN, so ``IsIXP == False``.
 
 Bug? Issues?
 ============
@@ -161,4 +161,4 @@ Pier Carlo Chiodi - https://pierky.com
 
 Blog: https://blog.pierky.com
 
-Twitter: @pierky <http://twitter.com/pierky>
+Twitter: @pierky http://twitter.com/pierky
