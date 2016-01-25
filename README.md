@@ -6,11 +6,31 @@ A Python library to gather IP address details (ASN, prefix, resource holder, rev
 
 Part of this work is based on Google Python IP address manipulation library (https://code.google.com/p/ipaddr-py/) and Jeff Ferland IPy library (https://github.com/autocracy/python-ipy).
 
-You need either ipaddr or IPy; version 0.2 of this library tries to import ipaddr and falls back on IPy.
+You need either ipaddr or IPy; versions >=0.2 of this library try to import ipaddr, then fall back on IPy.
 
 You can install them using pip:
 - `pip install ipaddr`
 - `pip install IPy`
+
+The `pip` packaged version installs the IPy library.
+
+## Installation
+
+- Using pip:
+
+```
+pip install ipdetailscache
+```
+
+- Manually, by cloning this repository:
+
+```
+git clone https://github.com/pierky/ipdetailscache.git
+```
+
+### Tests
+
+Some tests are provided within the tests directory. You can run them with `nosetests -vs`.
 
 ## Usage
 
@@ -21,7 +41,12 @@ Optionally, the cache object may be instantiated with the following arguments:
 - `IP_ADDRESSES_CACHE_FILE`, path to the file where IP addresses cache will be stored (default: "ip_addr.cache");
 - `IP_PREFIXES_CACHE_FILE`, path to the file where IP prefixes cache will be stored (default: "ip_pref.cache");
 - `MAX_CACHE`, expiration time for cache entries, in seconds (default: 604800, 1 week);
+- `dont_save_on_del`, avoid to save the cache on `__del__` (default: False, so it saves the cache);
 - `Debug`, set to True to enable some debug messages (default: False).
+
+`IP_ADDRESSES_CACHE_FILE` and `IP_PREFIXES_CACHE_FILE` can be set to `None` to avoid persistent storage of the cache on files.
+
+### Internet Exchange Points (IXPs) information
 
 Starting from version 0.3.0, results can be enriched with Internet Exchange Points (IXPs) IP address space information.
 **WARNING**: currently this feature is based on PeeringDB.com (www.peeringdb.com) **beta** API: use it at your own risk.
@@ -39,8 +64,8 @@ Results are given in a dictionary containing the following keys:
 Hostname is obtained using the local socket.getfqdn function.
 
 ```
-import ipdetailscache
-cache = ipdetailscache.IPDetailsCache( IP_ADDRESSES_CACHE_FILE = "ip_addr.cache", IP_PREFIXES_CACHE_FILE = "ip_pref.cache", MAX_CACHE = 604800, Debug = False )
+from pierky.ipdetailscache import IPDetailsCache
+cache = IPDetailsCache( IP_ADDRESSES_CACHE_FILE = "ip_addr.cache", IP_PREFIXES_CACHE_FILE = "ip_pref.cache", MAX_CACHE = 604800, Debug = False )
 cache.UseIXPs( WhenUse=1, IXP_CACHE_FILE="ixps.cache", MAX_CACHE=604800 )
 result = cache.GetIPInformation( "IP_ADDRESS" )
 ```
@@ -57,8 +82,8 @@ The `WhenUse` argument of `UseIXPs` method has this meaning:
 Python 2.7.2+ (default, Jul 20 2012, 22:15:08)
 [GCC 4.6.1] on linux2
 Type "help", "copyright", "credits" or "license" for more information.
->>> import ipdetailscache
->>> cache = ipdetailscache.IPDetailsCache()
+>>> from pierky.ipdetailscache import IPDetailsCache
+>>> cache = IPDetailsCache()
 >>> result = cache.GetIPInformation( "193.0.6.139" )
 >>> result
 {'HostName': 'www.ripe.net', 'TS': 1453068601, 'Prefix': u'193.0.0.0/21', 'IsIXP': None, 'IXPName': '', 'Holder': u'RIPE-NCC-AS Reseaux IP Europeens Network Coordination Centre (RIPE NCC),NL', 'ASN': '3333'}
@@ -88,8 +113,8 @@ AMS-IX IP is announced, so IsIXP is None because no IXP info have been used here
 Clear local cache with `rm *.cache`, then:
 
 ```
->>> import ipdetailscache
->>> cache = ipdetailscache.IPDetailsCache()
+>>> from pierky.ipdetailscache import IPDetailsCache
+>>> cache = IPDetailsCache()
 >>> cache.UseIXPs(WhenUse=2)
 >>> decix_ip="80.81.203.4"     # DE-CIX Hamburg IP, not announced
 >>> amsix_ip="80.249.208.1"    # AMS-IX IP, announced
