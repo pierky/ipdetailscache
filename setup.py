@@ -9,8 +9,8 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 # Get proper long description for package
 current_dir = dirname(abspath(__file__))
-description = open(join(current_dir, "README.md")).read()
-changes = open(join(current_dir, "CHANGES.md")).read()
+description = open(join(current_dir, "README.rst")).read()
+changes = open(join(current_dir, "CHANGES.rst")).read()
 long_description = '\n\n'.join([description, changes])
 exec(open(join(current_dir, "pierky/ipdetailscache/version.py")).read())
 
