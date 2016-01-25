@@ -1,0 +1,11 @@
+language: python
+sudo: false
+env:
+  - TOXENV=py27
+  - TOXENV=py34
+  - TOXENV=py27-pyflakes
+  - TOXENV=py27-pep8
+install:
+  - pip install tox
+script:
+  tox
