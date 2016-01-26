@@ -1,8 +1,6 @@
 ipdetailscache
 ==============
-
-.. image:: https://travis-ci.org/pierky/ipdetailscache.svg?branch=master
-    :target: https://travis-ci.org/pierky/ipdetailscache
+|Build Status| |PYPI Version| |Python Versions|
 
 A Python library to gather IP address details (ASN, prefix, resource holder, reverse DNS) using the RIPEStat API, with a basic cache to avoid flood of requests and to enhance performances.
 
@@ -42,7 +40,7 @@ Usage
 Import the library, then setup a cache object and use it to gather IP address details.
 The cache object will automatically load and save data to the local cache files.
 
-Optionally, the cache object may be instantiated with the following arents:
+Optionally, the cache object may be instantiated with the following arguments:
 
 - ``IP_ADDRESSES_CACHE_FILE``, path to the file where IP addresses cache will be stored (default: "ip_addr.cache");
 - ``IP_PREFIXES_CACHE_FILE``, path to the file where IP prefixes cache will be stored (default: "ip_pref.cache");
@@ -50,7 +48,7 @@ Optionally, the cache object may be instantiated with the following arents:
 - ``dont_save_on_del``, avoid to save the cache on ``__del__`` (default: False, so it saves the cache);
 - ``Debug``, set to True to enable some debug messages (default: False).
 
-``IP_ADDRESSES_CACHE_FILE`` and ``IP_PREFIXES_CACHE_FILE`` can be set to None to avoid persistent storage of the cache on files.
+``IP_ADDRESSES_CACHE_FILE`` and ``IP_PREFIXES_CACHE_FILE`` can be set to ``None`` to avoid persistent storage of the cache on files.
 
 Internet Exchange Points (IXPs) information
 -------------------------------------------
@@ -62,13 +60,15 @@ To enable IXPs info gathering, call the ``UseIXPs`` method of the cache.
 
 Results are given in a dictionary containing the following keys:
 
-- ASN           ["<ASN>" | "unknown" | "not announced"]
-- Holder        "string"
-- Prefix        "string"
-- HostName      "string"
-- IsIXP         [ None | bool ]
-- IXPName       "string"
-- TS            int
+::
+
+    - ASN           ["<ASN>" | "unknown" | "not announced"]
+    - Holder        "string"
+    - Prefix        "string"
+    - HostName      "string"
+    - IsIXP         [ None | bool ]
+    - IXPName       "string"
+    - TS            int
 
 Hostname is obtained using the local ``socket.getfqdn`` function.
 
@@ -79,7 +79,7 @@ Usage example::
     cache.UseIXPs( WhenUse=1, IXP_CACHE_FILE="ixps.cache", MAX_CACHE=604800 )
     result = cache.GetIPInformation( "IP_ADDRESS" )
 
-The WhenUse argument of UseIXPs method has this meaning:
+The ``WhenUse`` argument of ``UseIXPs`` method has this meaning:
 
 - 0: do not use IXPs info;
 - 1: use IXPs info only when can't determine ASN (unknown or not announced)
@@ -162,3 +162,10 @@ Pier Carlo Chiodi - https://pierky.com
 Blog: https://blog.pierky.com
 
 Twitter: @pierky http://twitter.com/pierky
+
+.. |Build Status| image:: https://travis-ci.org/pierky/ipdetailscache.svg?branch=master
+    :target: https://travis-ci.org/pierky/ipdetailscache
+.. |PYPI Version| image:: https://img.shields.io/pypi/v/ipdetailscache.svg
+    :target: https://pypi.python.org/pypi/ipdetailscache/
+.. |Python Versions| image:: https://img.shields.io/pypi/pyversions/ipdetailscache.svg
+    :target: https://pypi.python.org/pypi/ipdetailscache/
