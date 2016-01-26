@@ -97,3 +97,54 @@ class TestIPDetailsCache(TestIPDetailsCacheBase):
         self.assertEquals(ip["IsIXP"], False)
         self.verify_fetchipinfo_calls(1)
 
+    def test_ixps_whenuse0_notannounced(self):
+        """IXPs info, WhenUse = 0, IP not announced"""
+        self.setup_ixps(0)
+        ip = self.cache.GetIPInformation(self.IXPS_NOT_ANNOUNCED_IP)
+
+        self.assertEquals(ip["ASN"], "not announced")
+        self.verify_fetchipinfo_calls(1)
+        self.assertIsNone(ip["IsIXP"])
+
+        ip = self.cache.GetIPInformation(self.IXPS_NOT_ANNOUNCED_IP)
+        self.verify_fetchipinfo_calls(1)
+
+    def test_ixps_whenuse0then1_notannounced(self):
+        """IXPs info, WhenUse = 0, then WhenUse = 1, IP not announced"""
+        self.setup_ixps(0)
+        ip = self.cache.GetIPInformation(self.IXPS_NOT_ANNOUNCED_IP)
+
+        self.assertEquals(ip["ASN"], "not announced")
+        self.verify_fetchipinfo_calls(1)
+        self.assertIsNone(ip["IsIXP"])
+
+        self.cache.UseIXPs(
+            WhenUse=1,
+            IXP_CACHE_FILE=None
+        )
+        ip = self.cache.GetIPInformation(self.IXPS_NOT_ANNOUNCED_IP)
+
+        self.assertEquals(ip["ASN"], "not announced")
+        self.verify_fetchipinfo_calls(1)
+        self.assertIsNone(ip["IsIXP"])
+
+    def test_ixps_whenuse1then0_notannounced(self):
+        """IXPs info, WhenUse = 1, then WhenUse = 0, IP not announced"""
+        self.setup_ixps(1)
+        ip = self.cache.GetIPInformation(self.IXPS_NOT_ANNOUNCED_IP)
+
+        self.assertEquals(ip["ASN"], "not announced")
+        self.verify_fetchipinfo_calls(1)
+        self.assertEquals(ip["IsIXP"], True)
+        self.assertEquals(ip["IXPName"], self.IXPS_NOT_ANNOUNCED_IP_IXPNAME)
+
+        self.cache.UseIXPs(
+            WhenUse=0,
+            IXP_CACHE_FILE=None
+        )
+        ip = self.cache.GetIPInformation(self.IXPS_NOT_ANNOUNCED_IP)
+
+        self.assertEquals(ip["ASN"], "not announced")
+        self.verify_fetchipinfo_calls(1)
+        self.assertEquals(ip["IsIXP"], True)
+        self.assertEquals(ip["IXPName"], self.IXPS_NOT_ANNOUNCED_IP_IXPNAME)
