@@ -1,6 +1,14 @@
 Release History
 ===============
 
+0.4.3
+-----
+
+Fixes
+_____
+
+- In case of missing or bad IXPs info from PeeringDB, raise IPDetailsCacheIXPInformationError
+
 0.4.0 to 0.4.2
 ---------------
 

@@ -1,6 +1,6 @@
-from base_class import TestIPDetailsCacheBase
+from base_class import TestIPDetailsCacheBaseTests
 
 
-class TestIPDetailsCacheLive(TestIPDetailsCacheBase):
+class TestIPDetailsCacheLive(TestIPDetailsCacheBaseTests):
     LIVE = True
 

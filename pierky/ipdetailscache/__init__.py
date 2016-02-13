@@ -51,6 +51,14 @@ except ImportError:
     ip_library = 'IPy'
 
 
+class IPDetailsCacheError(Exception):
+    pass
+
+
+class IPDetailsCacheIXPInformationError(IPDetailsCacheError):
+    pass
+
+
 class IPWrapper():
 
     def __init__(self, ip):
@@ -399,18 +407,58 @@ class IPDetailsCache():
     def FetchIXPsInfo(self):
         self._Debug("Fetching IXPs info from PeeringDB API...")
 
-        url = IPDetailsCache.PEERINGDB_API_ixpfx
-        ixpfxs = json.loads(urlopen(url).read())
+        try:
+            url = IPDetailsCache.PEERINGDB_API_ixpfx
+            ixpfxs = json.loads(urlopen(url).read())
 
-        url = IPDetailsCache.PEERINGDB_API_ixlan
-        ixlans = json.loads(urlopen(url).read())
+            url = IPDetailsCache.PEERINGDB_API_ixlan
+            ixlans = json.loads(urlopen(url).read())
 
-        url = IPDetailsCache.PEERINGDB_API_ix
-        ixs = json.loads(urlopen(url).read())
+            url = IPDetailsCache.PEERINGDB_API_ix
+            ixs = json.loads(urlopen(url).read())
+        except Exception as e:
+            raise IPDetailsCacheIXPInformationError(
+                "Error fetching IXPs info from PeeringDB API: {}".format(
+                    str(e)
+                )
+            )
 
         self._Debug("IXPs info fetched")
 
         return (ixpfxs, ixlans, ixs)
+
+    def ValidateIXPInfo(self, ixpfxs, ixlans, ixs):
+
+        try:
+            for dct, dct_name, keys in [
+                (ixpfxs, "ixpfxs", ["prefix", "ixlan_id"]),
+                (ixlans, "ixlans", ["id", "ix_id"]),
+                (ixs, "ixs", ["id", "name"])
+            ]:
+
+                if "data" not in dct:
+                    raise KeyError(dct_name + " - missing key: data")
+                if not isinstance(dct["data"], list):
+                    raise TypeError(dct_name + " - data is not a list")
+                if len(dct["data"]) == 0:
+                    raise ValueError(dct_name + " - data is empty")
+
+                dct_el = dct["data"][0]
+                if not isinstance(dct_el, dict):
+                    raise TypeError(dct_name + " - 1st element is not a dict")
+
+                for k in keys:
+                    if k not in dct_el.keys():
+                        raise KeyError(
+                            dct_name + " - missing key from elements: "
+                            "{}".format(k)
+                        )
+        except Exception as e:
+            raise IPDetailsCacheIXPInformationError(
+                "Error validing PeeringDB IXPs information: {}".format(
+                    str(e)
+                )
+            )
 
     def UseIXPs(self, WhenUse=1, IXP_CACHE_FILE="ixps.cache",
                 MAX_CACHE=604800):
@@ -432,6 +480,8 @@ class IPDetailsCache():
                 return
 
         ixpfxs, ixlans, ixs = self.FetchIXPsInfo()
+
+        self.ValidateIXPInfo(ixpfxs, ixlans, ixs)
 
         ixs_dict = {}
         for ix in ixs["data"]:

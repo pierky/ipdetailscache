@@ -4,11 +4,11 @@ from time import time
 import unittest
 
 
-from base_class import TestIPDetailsCacheBase
+from base_class import TestIPDetailsCacheBaseTests
 from pierky.ipdetailscache import IPDetailsCache
 
 
-class TestIPDetailsCache(TestIPDetailsCacheBase):
+class TestIPDetailsCache(TestIPDetailsCacheBaseTests):
     LIVE = False
 
     def setup_ixps(self, whenuse):

@@ -60,6 +60,10 @@ class TestIPDetailsCacheBase(unittest.TestCase):
         else:
             self.assertEquals(self.mock_fetchipinfo.call_count, val)
 
+class TestIPDetailsCacheBaseTests(TestIPDetailsCacheBase):
+
+    LIVE = False
+
     def test_ipv4_loopback(self):
         """IPv4, loopback address{}"""
         ip = self.cache.GetIPInformation("127.0.0.1")
