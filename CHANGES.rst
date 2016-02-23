@@ -1,6 +1,14 @@
 Release History
 ===============
 
+0.4.4
+-----
+
+Fixes
+_____
+
+- Force UTF-8 on IXPs info download
+
 0.4.3
 -----
 

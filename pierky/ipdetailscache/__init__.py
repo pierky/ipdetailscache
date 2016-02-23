@@ -123,11 +123,15 @@ class IPDetailsCache():
         if self.Debug:
             print("DEBUG - IPDetailsCache - %s" % s)
 
+    @staticmethod
+    def _read_from_url(url):
+        response = urlopen(url)
+        return response.read().decode("utf-8")
+
     def FetchIPInfo(self, IP):
         self._Debug("Fetching info for {} from RIPEStat API".format(IP))
         url = IPDetailsCache.URL.format(IP)
-        response = urlopen(url)
-        return json.loads(response.read().decode("utf-8"))
+        return json.loads(self._read_from_url(url))
 
     # IPPrefixesCache[<ip prefix>]["TS"]
     # IPPrefixesCache[<ip prefix>]["ASN"]
@@ -409,13 +413,13 @@ class IPDetailsCache():
 
         try:
             url = IPDetailsCache.PEERINGDB_API_ixpfx
-            ixpfxs = json.loads(urlopen(url).read())
+            ixpfxs = json.loads(self._read_from_url(url))
 
             url = IPDetailsCache.PEERINGDB_API_ixlan
-            ixlans = json.loads(urlopen(url).read())
+            ixlans = json.loads(self._read_from_url(url))
 
             url = IPDetailsCache.PEERINGDB_API_ix
-            ixs = json.loads(urlopen(url).read())
+            ixs = json.loads(self._read_from_url(url))
         except Exception as e:
             raise IPDetailsCacheIXPInformationError(
                 "Error fetching IXPs info from PeeringDB API: {}".format(
