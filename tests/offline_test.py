@@ -126,7 +126,8 @@ class TestIPDetailsCache(TestIPDetailsCacheBaseTests):
 
         self.assertEquals(ip["ASN"], "not announced")
         self.verify_fetchipinfo_calls(1)
-        self.assertIsNone(ip["IsIXP"])
+        self.assertEquals(ip["IsIXP"], True)
+        self.assertEquals(ip["IXPName"], self.IXPS_NOT_ANNOUNCED_IP_IXPNAME)
 
     def test_ixps_whenuse1then0_notannounced(self):
         """IXPs info, WhenUse = 1, then WhenUse = 0, IP not announced"""

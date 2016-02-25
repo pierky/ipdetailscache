@@ -1,6 +1,14 @@
 Release History
 ===============
 
+0.4.5
+-----
+
+Fixes
+_____
+
+- Behaviour change in IXPs info: if WhenUse != 0 check for IXPs info also for cached addresses having IsIXP == None
+
 0.4.4
 -----
 

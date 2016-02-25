@@ -143,6 +143,31 @@ class IPDetailsCache():
     # IPAddressesCache[<ip>]["Prefix"]
     # IPAddressesCache[<ip>]["HostName"]
 
+    def _enrich_with_ixp_info(self, IPObj, Result):
+        if Result["IsIXP"] is not None:
+            # cached address already enriched with IXPs info
+            return
+
+        if self.UseIXPsCache == 2 or (self.UseIXPsCache == 1 and
+                                      not Result["ASN"].isdigit()):
+
+            self._Debug("Looking for IXP info")
+
+            Result["IsIXP"] = False
+
+            for IPPrefix in self.IXPsCache["Data"].keys():
+                if NetWrapper(IPPrefix).contains(IPObj):
+                    Result["IsIXP"] = True
+                    Result["IXPName"] = \
+                        self.IXPsCache["Data"][IPPrefix]["name"]
+                    self._Debug(
+                        "IXP found: prefix {}, name {}".format(
+                            IPPrefix,
+                            self.IXPsCache["Data"][IPPrefix]["name"]
+                        )
+                    )
+                    break
+
     def GetIPInformation(self, in_IP):
         Result = {}
         Result["TS"] = 0
@@ -172,6 +197,7 @@ class IPDetailsCache():
                 for k in self.IPAddressesCache[IP].keys():
                     Result[k] = self.IPAddressesCache[IP][k]
                 self._Debug("IP address cache hit for %s" % IP)
+                self._enrich_with_ixp_info(IPObj, Result)
                 return Result
             else:
                 self._Debug("Expired IP address cache hit for %s" % IP)
@@ -229,25 +255,7 @@ class IPDetailsCache():
                 else:
                     Result["HostName"] = HostName
 
-            if self.UseIXPsCache == 2 or (self.UseIXPsCache == 1 and
-                                          not Result["ASN"].isdigit()):
-
-                self._Debug("Looking for IXP info")
-
-                Result["IsIXP"] = False
-
-                for IPPrefix in self.IXPsCache["Data"].keys():
-                    if NetWrapper(IPPrefix).contains(IPObj):
-                        Result["IsIXP"] = True
-                        Result["IXPName"] = \
-                            self.IXPsCache["Data"][IPPrefix]["name"]
-                        self._Debug(
-                            "IXP found: prefix {}, name {}".format(
-                                IPPrefix,
-                                self.IXPsCache["Data"][IPPrefix]["name"]
-                            )
-                        )
-                        break
+            self._enrich_with_ixp_info(IPObj, Result)
 
         if IP not in self.IPAddressesCache:
             self.IPAddressesCache[IP] = {}
