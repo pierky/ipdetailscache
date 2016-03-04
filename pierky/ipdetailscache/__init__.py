@@ -255,19 +255,21 @@ class IPDetailsCache():
                 else:
                     Result["HostName"] = HostName
 
-            self._enrich_with_ixp_info(IPObj, Result)
+        self._enrich_with_ixp_info(IPObj, Result)
 
         if IP not in self.IPAddressesCache:
             self.IPAddressesCache[IP] = {}
             self._Debug("Adding %s to addresses cache" % IP)
+        else:
+            self._Debug("Updating addresses cache for %s" % IP)
 
-            self.IPAddressesCache[IP]["TS"] = Result["TS"]
-            self.IPAddressesCache[IP]["ASN"] = Result["ASN"]
-            self.IPAddressesCache[IP]["Holder"] = Result["Holder"]
-            self.IPAddressesCache[IP]["Prefix"] = Result["Prefix"]
-            self.IPAddressesCache[IP]["HostName"] = Result["HostName"]
-            self.IPAddressesCache[IP]["IsIXP"] = Result["IsIXP"]
-            self.IPAddressesCache[IP]["IXPName"] = Result["IXPName"]
+        self.IPAddressesCache[IP]["TS"] = Result["TS"]
+        self.IPAddressesCache[IP]["ASN"] = Result["ASN"]
+        self.IPAddressesCache[IP]["Holder"] = Result["Holder"]
+        self.IPAddressesCache[IP]["Prefix"] = Result["Prefix"]
+        self.IPAddressesCache[IP]["HostName"] = Result["HostName"]
+        self.IPAddressesCache[IP]["IsIXP"] = Result["IsIXP"]
+        self.IPAddressesCache[IP]["IXPName"] = Result["IXPName"]
 
         if Result["Prefix"] != "":
             IPPrefix = Result["Prefix"]

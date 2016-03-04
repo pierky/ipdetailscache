@@ -1,6 +1,14 @@
 Release History
 ===============
 
+0.4.6
+-----
+
+Fixes
+_____
+
+- Wrong behaviour when a cached IP address expires.
+
 0.4.5
 -----
 
