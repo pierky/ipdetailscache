@@ -149,3 +149,23 @@ class TestIPDetailsCache(TestIPDetailsCacheBaseTests):
         self.verify_fetchipinfo_calls(1)
         self.assertEquals(ip["IsIXP"], True)
         self.assertEquals(ip["IXPName"], self.IXPS_NOT_ANNOUNCED_IP_IXPNAME)
+
+    def test_ixps_whenuse1_notannounced_cached_prefix(self):
+        """IXPs info, WhenUse = 1, IP not announced, cached prefix"""
+        self.setup_ixps(1)
+        ip = self.cache.GetIPInformation(self.IXPS_NOT_ANNOUNCED_IP)
+
+        self.assertEquals(ip["ASN"], "not announced")
+        self.verify_fetchipinfo_calls(1)
+        self.assertEquals(ip["IsIXP"], True)
+
+        # Invalidate addresses cache and verify if IP address info
+        # obtained from prefixes cache contain the IXP info
+        for k in self.cache.IPAddressesCache.keys():
+            self.cache.IPAddressesCache[k]["TS"] = 0
+
+        ip = self.cache.GetIPInformation(self.IXPS_NOT_ANNOUNCED_IP)
+
+        self.assertEquals(ip["ASN"], "not announced")
+        self.assertEquals(ip["IsIXP"], True)
+        self.verify_fetchipinfo_calls(1)

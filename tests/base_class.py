@@ -138,3 +138,26 @@ class TestIPDetailsCacheBaseTests(TestIPDetailsCacheBase):
         self.assertEquals(ip["ASN"], self.ASN)
         self.verify_fetchipinfo_calls(2)
 
+    def test_expiredip_validprefix(self):
+        """Fake cache, expired IP, valid prefix{}"""
+        ip = self.cache.GetIPInformation(self.IP)
+
+        for k in self.cache.IPAddressesCache.keys():
+            self.cache.IPAddressesCache[k]["TS"] = 0
+
+        ip = self.cache.GetIPInformation(self.IP)
+
+        self.assertEquals(ip["ASN"], self.ASN)
+        self.verify_fetchipinfo_calls(1)
+
+        # Invalidate prefixes cache and verify if IP address has been
+        # added to addresses cache
+
+        for k in self.cache.IPPrefixesCache.keys():
+            self.cache.IPPrefixesCache[k]["TS"] = 0
+
+        ip2 = self.cache.GetIPInformation(self.IP)
+
+        self.assertEquals(ip["ASN"], self.ASN)
+        self.verify_fetchipinfo_calls(1)
+        self.assertEquals(ip["TS"], ip2["TS"])
