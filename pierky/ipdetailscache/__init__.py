@@ -113,9 +113,9 @@ class NetWrapper():
 
 class IPDetailsCache():
 
-    PEERINGDB_API_ixpfx = "https://beta.peeringdb.com/api/ixpfx"
-    PEERINGDB_API_ixlan = "https://beta.peeringdb.com/api/ixlan"
-    PEERINGDB_API_ix = "https://beta.peeringdb.com/api/ix"
+    PEERINGDB_API_ixpfx = "https://www.peeringdb.com/api/ixpfx"
+    PEERINGDB_API_ixlan = "https://www.peeringdb.com/api/ixlan"
+    PEERINGDB_API_ix = "https://www.peeringdb.com/api/ix"
 
     URL = "https://stat.ripe.net/data/prefix-overview/data.json?resource={}"
 

@@ -1,6 +1,11 @@
 Release History
 ===============
 
+0.4.7
+-----
+
+- PeeringDB API is no longer in beta: URL updated.
+  
 0.4.6
 -----
 

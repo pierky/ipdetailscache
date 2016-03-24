@@ -54,7 +54,7 @@ Internet Exchange Points (IXPs) information
 -------------------------------------------
 
 Starting from version 0.3.0, results can be enriched with Internet Exchange Points (IXPs) IP address space information.
-**WARNING**: currently this feature is based on PeeringDB.com (www.peeringdb.com) **beta** API: use it at your own risk.
+This feature is based on PeeringDB.com (www.peeringdb.com) API.
 
 To enable IXPs info gathering, call the ``UseIXPs`` method of the cache.
 
