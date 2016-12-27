@@ -1,6 +1,11 @@
 Release History
 ===============
 
+0.4.8
+-----
+
+- Fix a packaging issue.
+
 0.4.7
 -----
 

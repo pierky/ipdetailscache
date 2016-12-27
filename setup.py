@@ -20,6 +20,7 @@ setup(
     version=__version__,
 
     packages=["pierky", "pierky.ipdetailscache"],
+    namespace_packages=["pierky"],
     include_package_data=True,
 
     license="MIT",
